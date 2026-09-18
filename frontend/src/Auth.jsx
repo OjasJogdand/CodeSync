@@ -11,13 +11,15 @@ export default function Auth({ onAuthSuccess }) {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  // Use the deployed backend URL, with localhost available for local development.
+  const BACKEND_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
-      const BACKEND_URL = import.meta.env.VITE_API_BASE_URL;
       const endpoint = isLogin ? '/api/auth/login' : '/api/auth/signup';
       const payload = isLogin ? { email, password } : { email, password, name };
       

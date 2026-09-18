@@ -5,7 +5,7 @@ import axios from 'axios'
 import Auth from './Auth'
 import RoomPage from './RoomPage'
 
-const BACKEND_URL = import.meta.env.VITE_API_BASE_URL;
+const BACKEND_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '')
 
 const starterCode = `function greet(name) {
   return \`Hello, \${name}!\`;
