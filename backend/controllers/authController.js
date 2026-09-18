@@ -7,7 +7,8 @@ const generateTokenAndSetCookie = (res, userId) => {
     expiresIn: '7d',
   });
 
-  const isProduction = process.env.FRONTEND_URL?.startsWith('https://');
+  const isProduction = process.env.NODE_ENV === 'production'
+    || process.env.FRONTEND_URL?.startsWith('https://');
 
   res.cookie('token', token, {
     httpOnly: true,
@@ -27,6 +28,7 @@ export const signup = async (req, res) => {
 
     const user = await createUser(email, password, name);
     generateTokenAndSetCookie(res, user.id);
+    console.log('[Auth] REST user authenticated:', user.id);
     
     res.status(201).json({ user });
   } catch (error) {
@@ -52,6 +54,7 @@ export const login = async (req, res) => {
     }
 
     generateTokenAndSetCookie(res, user.id);
+    console.log('[Auth] REST user authenticated:', user.id);
     res.status(200).json({ user });
   } catch (error) {
     console.error('Login error:', error);
@@ -65,6 +68,7 @@ export const getMe = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
+    console.log('[Auth] REST user authenticated:', user.id);
     res.status(200).json({ user });
   } catch (error) {
     console.error('Get user error:', error);

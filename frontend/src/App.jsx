@@ -34,8 +34,10 @@ function AppContent() {
     const checkAuth = async () => {
       try {
         const res = await axios.get(`${BACKEND_URL}/api/auth/me`, { withCredentials: true })
+        console.log('[Auth] /api/auth/me result: success', res.data.user.id)
         setUser(res.data.user)
       } catch {
+        console.log('[Auth] /api/auth/me result: failed')
         setUser(null)
       } finally {
         setLoading(false)
@@ -73,28 +75,32 @@ function AppContent() {
       setOnlineUsers(users)
     })
 
-    socketInstance.connect()
-
     // Phase 7 — receive an incoming collaboration request
     socketInstance.on('receive_collaboration_request', ({ fromUserId, fromUserName }) => {
+      console.log('[Socket] Collaboration request received:', fromUserId)
       setIncomingRequest({ fromUserId, fromUserName })
     })
 
     // Phase 7 — requester is notified when the other party declines
     socketInstance.on('collaboration_declined', ({ byUserName }) => {
+      console.log('[Socket] Collaboration response received: declined', byUserName)
       showNotification(`${byUserName} declined your request.`)
     })
 
     // Phase 8 — both users navigate to the new room on acceptance
     socketInstance.on('collaboration_accepted', ({ roomId }) => {
+      console.log('[Socket] Collaboration response received: accepted', roomId)
       setIncomingRequest(null)
       navigate(`/room/${roomId}`)
     })
 
     // Surface any server-side errors as a toast
     socketInstance.on('collaboration_error', ({ message }) => {
+      console.log('[Socket] Collaboration response received: error', message)
       showNotification(message)
     })
+
+    socketInstance.connect()
 
     return () => {
       socketInstance.disconnect()

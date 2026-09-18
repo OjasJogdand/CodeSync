@@ -66,6 +66,7 @@ const authMiddleware = (socket, next) => {
     const cookieHeader = socket.handshake.headers.cookie || '';
     const cookies = parseCookie(cookieHeader);
     const token = cookies.token;
+    console.log('[Socket] JWT cookie present:', Boolean(token));
 
     if (!token) return next(new Error('Authentication error: No token'));
 
@@ -117,11 +118,14 @@ const registerSocketHandlers = (io) => {
 
     // Forward a collaboration request from the sender to the target user
     socket.on('collaboration_request', ({ toUserId }) => {
+      console.log('[Collaboration] Request:', dbUser.id, '->', toUserId);
       const targetUser = onlineUsers.get(toUserId);
       if (!targetUser) {
+        console.log('[Collaboration] Target socketId found:', false);
         socket.emit('collaboration_error', { message: 'User is no longer online.' });
         return;
       }
+      console.log('[Collaboration] Target socketId found:', true);
       io.to(targetUser.socketId).emit('receive_collaboration_request', {
         fromUserId: dbUser.id,
         fromUserName: dbUser.name,
@@ -130,6 +134,7 @@ const registerSocketHandlers = (io) => {
 
     // Notify the original requester that their request was declined
     socket.on('decline_collaboration', ({ toUserId }) => {
+      console.log('[Collaboration] Declined by:', dbUser.id, 'for:', toUserId);
       const requester = onlineUsers.get(toUserId);
       if (requester) {
         io.to(requester.socketId).emit('collaboration_declined', {
@@ -142,6 +147,7 @@ const registerSocketHandlers = (io) => {
 
     // When User B accepts, create a Room + RoomMembers in a DB transaction
     socket.on('accept_collaboration', async ({ fromUserId }) => {
+      console.log('[Collaboration] Accepted by:', dbUser.id, 'from:', fromUserId);
       const requester = onlineUsers.get(fromUserId);
       if (!requester) {
         socket.emit('collaboration_error', { message: 'Requester is no longer online.' });
