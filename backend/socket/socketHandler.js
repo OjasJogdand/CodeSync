@@ -104,10 +104,14 @@ const registerSocketHandlers = (io) => {
 
     const joinedRoomIds = new Set();
 
+    console.log('[Socket] Authenticated user ID:', dbUser.id);
+
     // Add user to the presence map and broadcast the updated list to all clients
     onlineUsers.set(dbUser.id, { ...dbUser, socketId: socket.id });
     console.log(`[+] ${dbUser.name} connected (${socket.id})`);
-    io.emit('online_users_update', getOnlineUsersList());
+    const connectedUsers = getOnlineUsersList();
+    console.log('[Socket] Current online users:', connectedUsers);
+    io.emit('online_users_update', connectedUsers);
 
     // ── Phase 7: Collaboration Request ──────────────────────────────────
 
@@ -292,7 +296,9 @@ const registerSocketHandlers = (io) => {
       if (entry && entry.socketId === socket.id) {
         onlineUsers.delete(dbUser.id);
         console.log(`[-] ${dbUser.name} disconnected`);
-        io.emit('online_users_update', getOnlineUsersList());
+        const connectedUsers = getOnlineUsersList();
+        console.log('[Socket] Current online users:', connectedUsers);
+        io.emit('online_users_update', connectedUsers);
       }
 
       // Remove user from all rooms they were part of

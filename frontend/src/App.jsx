@@ -56,13 +56,24 @@ function AppContent() {
       return
     }
 
-    // Create a new socket connection authenticated via the httpOnly cookie
-    socketInstance = io(BACKEND_URL, { withCredentials: true })
+    // Create the socket without connecting so listeners are ready first.
+    socketInstance = io(BACKEND_URL, { withCredentials: true, autoConnect: false })
+
+    socketInstance.on('connect', () => {
+      console.log('[Socket] Connected:', socketInstance.id)
+    })
+
+    socketInstance.on('connect_error', (error) => {
+      console.error('[Socket] Connection error:', error.message)
+    })
 
     // Receive the full updated list of online users from the server
     socketInstance.on('online_users_update', (users) => {
+      console.log('[Socket] Online users received:', users)
       setOnlineUsers(users)
     })
+
+    socketInstance.connect()
 
     // Phase 7 — receive an incoming collaboration request
     socketInstance.on('receive_collaboration_request', ({ fromUserId, fromUserName }) => {
