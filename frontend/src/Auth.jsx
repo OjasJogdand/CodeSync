@@ -17,10 +17,11 @@ export default function Auth({ onAuthSuccess }) {
     setLoading(true);
 
     try {
+      const BACKEND_URL = import.meta.env.VITE_API_BASE_URL;
       const endpoint = isLogin ? '/api/auth/login' : '/api/auth/signup';
       const payload = isLogin ? { email, password } : { email, password, name };
       
-      const res = await axios.post(`http://localhost:8000${endpoint}`, payload, {
+      const res = await axios.post(`${BACKEND_URL}${endpoint}`, payload, {
         withCredentials: true
       });
       
